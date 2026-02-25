@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Resume Analyzer</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>AI Resume Skill Analyzer</h2>
+
+<textarea id="resumeText" placeholder="Paste resume text here"></textarea>
+<br>
+<button onclick="analyzeResume()">Analyze</button>
+
+<div class="result" id="result"></div>
+
+<script>
+function analyzeResume() {
+    const text = document.getElementById("resumeText").value;
+
+    if (text.trim() === "") {
+        alert("Please paste your resume text first.");
+        return;
+    }
+
+    document.getElementById("result").innerHTML = "<p>Analyzing resume...</p>";
+
+    fetch("http://127.0.0.1:5000/analyze", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ resume_text: text })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("result").innerHTML = `
+            <h3>Profile Analysis Result</h3>
+            <p><strong>Experience Level:</strong> ${data.experience_level}</p>
+            <p><strong>Skill Score:</strong> ${data.skill_score}%</p>
+
+            <h4>Detected Skills:</h4>
+            <ul>${data.detected_skills.map(skill => `<li>${skill}</li>`).join("")}</ul>
+
+            <h4>Missing High-Demand Skills:</h4>
+            <ul>${data.missing_skills.map(skill => `<li>${skill}</li>`).join("")}</ul>
+
+            <h4>Suggestions:</h4>
+            <ul>${data.suggestions.map(s => `<li>${s}</li>`).join("")}</ul>
+
+            <h4>Recommended Roles:</h4>
+            <ul>${data.recommended_roles.map(role => `<li>${role}</li>`).join("")}</ul>
+        `;
+    })
+    .catch(error => {
+        document.getElementById("result").innerHTML = "<p>Error occurred while analyzing.</p>";
+    });
+}
+</script>
+
+</body>
+</html>
